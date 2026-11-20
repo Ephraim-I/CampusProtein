@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.api.health import router as health_router
+from app.api.foods import router as foods_router
 
 app = FastAPI(
     title=settings.app_name,
@@ -22,6 +23,7 @@ app.add_middleware(
 )
 
 app.include_router(health_router, prefix="/api/v1")
+app.include_router(foods_router, prefix="/api/v1")
 
 
 @app.get("/")
@@ -31,4 +33,5 @@ def root():
         "version": settings.app_version,
         "docs": "/docs",
         "health": "/api/v1/health",
+        "marketplace": "/api/v1/foods",
     }

@@ -10,7 +10,6 @@ import {
   ArrowRight,
   Flame,
   TrendingUp,
-  Clock,
   MapPin,
   Heart,
   Menu,
@@ -19,55 +18,95 @@ import "./App.css";
 
 type HealthStatus = "checking" | "connected" | "offline";
 
-const foods = [
-  {
-    name: "Soy Protein Bowl",
-    category: "SOY PROTEIN",
-    price: 1800,
-    protein: 32,
-    vendor: "Green Bowl Kitchen",
-    image:
-      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=700&q=85",
-  },
-  {
-    name: "Peanut & Bean Wrap",
-    category: "LEGUMES",
-    price: 1200,
-    protein: 21,
-    vendor: "Campus Bites",
-    image:
-      "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=700&q=85",
-  },
-  {
-    name: "Mushroom Rice Bowl",
-    category: "MUSHROOM",
-    price: 1500,
-    protein: 18,
-    vendor: "Fresh Harvest",
-    image:
-      "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=700&q=85",
-  },
+type MarketplaceListing = {
+  id: number;
+  title: string;
+  description: string;
+  price_ngn: number;
+  quantity_available: number;
+  serving_size_g: number;
+  food: {
+    name: string;
+    protein_category: string;
+    food_type: string;
+    protein_per_100g: number;
+    calories_per_100g: number;
+    nutrition_source: string;
+    allergens: string[];
+    dietary_tags: string[];
+  };
+  vendor: {
+    business_name: string;
+    location: string;
+  };
+};
+
+type FoodCard = {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  protein: number;
+  vendor: string;
+  stock: number;
+  image: string;
+};
+
+const foodImages = [
+  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=700&q=85",
+  "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=700&q=85",
+  "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=700&q=85",
 ];
 
 function App() {
   const [health, setHealth] = useState<HealthStatus>("checking");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [foods, setFoods] = useState<FoodCard[]>([]);
+  const [marketLoading, setMarketLoading] = useState(true);
+  const [marketError, setMarketError] = useState("");
 
   useEffect(() => {
-    const checkApi = async () => {
+    const loadMarketplace = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/v1/health");
-        if (response.ok) {
-          setHealth("connected");
-        } else {
-          setHealth("offline");
+        const [healthResponse, foodResponse] = await Promise.all([
+          fetch("/proxy/8000/api/v1/health"),
+          fetch("/proxy/8000/api/v1/foods/"),
+        ]);
+
+        setHealth(healthResponse.ok ? "connected" : "offline");
+
+        if (!foodResponse.ok) {
+          throw new Error("Unable to load marketplace listings");
         }
-      } catch {
+
+        const listings: MarketplaceListing[] = await foodResponse.json();
+
+        const mappedFoods: FoodCard[] = listings.map((listing, index) => ({
+          id: listing.id,
+          name: listing.title,
+          category: listing.food.protein_category
+            .replaceAll("_", " ")
+            .toUpperCase(),
+          price: listing.price_ngn,
+          protein:
+            (listing.food.protein_per_100g * listing.serving_size_g) / 100,
+          vendor: listing.vendor.business_name,
+          stock: listing.quantity_available,
+          image: foodImages[index % foodImages.length],
+        }));
+
+        setFoods(mappedFoods);
+        setMarketError("");
+      } catch (error) {
+        console.error("Marketplace loading error:", error);
         setHealth("offline");
+        setMarketError("Marketplace is temporarily unavailable.");
+      } finally {
+        setMarketLoading(false);
       }
     };
 
-    checkApi();
+    loadMarketplace();
   }, []);
 
   const formatPrice = (price: number) =>
@@ -75,13 +114,17 @@ function App() {
 
   return (
     <div className="app-shell">
+      {/* SIDEBAR */}
       <aside className={`sidebar ${menuOpen ? "sidebar-open" : ""}`}>
         <div className="brand">
           <div className="brand-mark">
             <Leaf size={23} strokeWidth={2.5} />
           </div>
+
           <div>
-            <span className="brand-name">campus<span>protein</span></span>
+            <span className="brand-name">
+              campus<span>protein</span>
+            </span>
             <span className="brand-subtitle">Eat better. Grow stronger.</span>
           </div>
         </div>
@@ -93,19 +136,23 @@ function App() {
             <Home size={19} />
             <span>Overview</span>
           </a>
+
           <a className="nav-item" href="#marketplace">
             <Store size={19} />
             <span>Marketplace</span>
           </a>
+
           <a className="nav-item" href="#nutrition">
             <Utensils size={19} />
             <span>Nutrition</span>
           </a>
+
           <a className="nav-item" href="#goals">
             <Target size={19} />
             <span>My Goals</span>
           </a>
-          <a className="nav-item" href="#">
+
+          <a className="nav-item" href="#orders">
             <ShoppingBag size={19} />
             <span>My Orders</span>
             <span className="nav-count">0</span>
@@ -117,228 +164,280 @@ function App() {
             <div className="challenge-icon">
               <Flame size={20} />
             </div>
+
             <h3>Protein Challenge</h3>
-            <p>Make every meal count. Start your streak today.</p>
-            <a href="#goals">
-              View challenge <ArrowRight size={14} />
+            <p>Start building healthy eating habits today.</p>
+
+            <a href="#nutrition">
+              Explore nutrition <ArrowRight size={14} />
             </a>
           </div>
 
-          <div className="profile">
-            <div className="avatar">S</div>
-            <div className="profile-info">
-              <strong>Student</strong>
-              <span>Campus member</span>
+          <div className="sidebar-footer">
+            <div className="sidebar-avatar">CP</div>
+            <div>
+              <strong>CampusProtein</strong>
+              <span>Demo account</span>
             </div>
-            <span className="profile-dots">···</span>
           </div>
         </div>
       </aside>
 
+      {/* MAIN CONTENT */}
       <main className="main-content">
+        {/* HEADER */}
         <header className="topbar">
           <button
-            className="mobile-menu"
+            className="mobile-menu-button"
             onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle navigation"
+            aria-label="Toggle menu"
           >
             <Menu size={22} />
           </button>
 
-          <div className="breadcrumb">
-            <span>Workspace</span>
-            <span className="breadcrumb-separator">/</span>
-            <strong>Overview</strong>
+          <div className="welcome-text">
+            <h1>Good day 👋</h1>
+            <p>Let's make today a nutritious one.</p>
           </div>
 
           <div className="topbar-actions">
-            <div className={`connection ${health}`}>
-              <span className="connection-dot" />
-              {health === "connected"
-                ? "System online"
-                : health === "checking"
-                  ? "Connecting..."
-                  : "API offline"}
+            <div className={`api-status ${health}`}>
+              <span className="status-dot" />
+              {health === "checking"
+                ? "Connecting..."
+                : health === "connected"
+                  ? "System connected"
+                  : "System offline"}
             </div>
 
-            <button className="icon-button" aria-label="Notifications">
+            <button className="notification-button" aria-label="Notifications">
               <Bell size={19} />
-              <span className="notification-dot" />
             </button>
           </div>
         </header>
 
-        <div className="page-content">
-          <section className="welcome-section">
+        {/* DASHBOARD STATS */}
+        <section className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-top">
+              <div className="stat-icon green-icon">
+                <Leaf size={19} />
+              </div>
+              <span className="stat-label">DAILY PROTEIN</span>
+            </div>
+
+            <div className="stat-value">
+              0 <span>/ 55g</span>
+            </div>
+
+            <p>Your daily protein progress</p>
+
+            <div className="progress-track">
+              <div className="progress-fill" style={{ width: "0%" }} />
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-top">
+              <div className="stat-icon orange-icon">
+                <Flame size={19} />
+              </div>
+              <span className="stat-label">CURRENT STREAK</span>
+            </div>
+
+            <div className="stat-value">
+              0 <span>days</span>
+            </div>
+
+            <p>Start your nutrition streak</p>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-top">
+              <div className="stat-icon purple-icon">
+                <TrendingUp size={19} />
+              </div>
+              <span className="stat-label">REWARD POINTS</span>
+            </div>
+
+            <div className="stat-value">
+              0 <span>points</span>
+            </div>
+
+            <p>Earn points through healthy habits</p>
+          </div>
+
+          <div className="stat-card" id="orders">
+            <div className="stat-top">
+              <div className="stat-icon blue-icon">
+                <ShoppingBag size={19} />
+              </div>
+              <span className="stat-label">YOUR ORDERS</span>
+            </div>
+
+            <div className="stat-value">
+              0 <span>orders</span>
+            </div>
+
+            <p>Your campus food journey starts here</p>
+          </div>
+        </section>
+
+        {/* HERO */}
+        <section className="hero-section">
+          <div className="hero-content">
+            <p className="eyebrow">YOUR NUTRITION JOURNEY</p>
+
+            <h2>
+              Good food.
+              <br />
+              Stronger you.
+            </h2>
+
+            <p>
+              Discover affordable protein-rich meals, track your nutrition,
+              and build better eating habits.
+            </p>
+
+            <a href="#marketplace" className="hero-button">
+              Explore meals <ArrowRight size={16} />
+            </a>
+          </div>
+        </section>
+
+        {/* MARKETPLACE */}
+        <section className="market-section" id="marketplace">
+          <div className="section-heading">
             <div>
-              <p className="eyebrow">THURSDAY, NOVEMBER 20</p>
-              <h1>Good evening, <span>Student</span> 👋</h1>
-              <p className="welcome-description">
-                Fuel your goals with smarter food choices.
+              <p className="eyebrow">FRESH PICKS</p>
+              <h2>Discover your next meal</h2>
+              <p className="section-description">
+                Delicious options. More protein. Friendly prices.
               </p>
             </div>
 
-            <button className="primary-button" onClick={() => {
-              document.getElementById("marketplace")?.scrollIntoView({
-                behavior: "smooth",
-              });
-            }}>
-              Explore food <ArrowRight size={17} />
-            </button>
-          </section>
+            <a href="#marketplace" className="view-all">
+              View marketplace <ArrowRight size={16} />
+            </a>
+          </div>
 
-          <section className="hero-card">
-            <div className="hero-content">
-              <div className="hero-tag">
-                <Leaf size={14} /> YOUR FOOD, YOUR FUTURE
+          <div className="food-grid">
+            {marketLoading ? (
+              <div className="marketplace-message">
+                <p>Loading marketplace...</p>
               </div>
-              <h2>Good food.<br />Stronger you.</h2>
-              <p>
-                Discover affordable protein-rich meals around campus.
-                Every bite moves you closer to your goals.
-              </p>
-              <button
-                className="hero-button"
-                onClick={() =>
-                  document.getElementById("marketplace")?.scrollIntoView({
-                    behavior: "smooth",
-                  })
-                }
-              >
-                Discover meals <ArrowRight size={16} />
-              </button>
-            </div>
-            <div className="hero-image" />
-            <div className="hero-decoration">01</div>
-          </section>
-
-          <section className="stats-grid" id="goals">
-            <div className="stat-card protein-stat">
-              <div className="stat-top">
-                <div className="stat-icon green-icon">
-                  <Target size={19} />
-                </div>
-                <span className="stat-label">DAILY PROTEIN</span>
+            ) : marketError ? (
+              <div className="marketplace-message">
+                <p>{marketError}</p>
               </div>
-              <div className="stat-value">0 <span>/ 55g</span></div>
-              <div className="progress-track">
-                <div className="progress-fill" style={{ width: "0%" }} />
+            ) : foods.length === 0 ? (
+              <div className="marketplace-message">
+                <p>No available meals at the moment.</p>
               </div>
-              <p>Log your meals to track your progress</p>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-top">
-                <div className="stat-icon orange-icon">
-                  <Flame size={19} />
-                </div>
-                <span className="stat-label">CURRENT STREAK</span>
-              </div>
-              <div className="stat-value">0 <span>days</span></div>
-              <p>Start today and build your habit</p>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-top">
-                <div className="stat-icon purple-icon">
-                  <TrendingUp size={19} />
-                </div>
-                <span className="stat-label">PROTEIN POINTS</span>
-              </div>
-              <div className="stat-value">0 <span>pts</span></div>
-              <p>Earn points by making smart choices</p>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-top">
-                <div className="stat-icon blue-icon">
-                  <ShoppingBag size={19} />
-                </div>
-                <span className="stat-label">YOUR ORDERS</span>
-              </div>
-              <div className="stat-value">0 <span>orders</span></div>
-              <p>Your campus food journey starts here</p>
-            </div>
-          </section>
-
-          <section className="market-section" id="marketplace">
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow">FRESH PICKS</p>
-                <h2>Discover your next meal</h2>
-                <p className="section-description">
-                  Delicious options. More protein. Friendly prices.
-                </p>
-              </div>
-              <a href="#" className="view-all">
-                View marketplace <ArrowRight size={16} />
-              </a>
-            </div>
-
-            <div className="food-grid">
-              {foods.map((food) => (
-                <article className="food-card" key={food.name}>
+            ) : (
+              foods.map((food) => (
+                <article className="food-card" key={food.id}>
                   <div className="food-image-wrapper">
                     <img src={food.image} alt={food.name} />
+
                     <span className="food-category">{food.category}</span>
-                    <button className="favorite-button" aria-label={`Save ${food.name}`}>
+
+                    <button
+                      className="favorite-button"
+                      aria-label={`Save ${food.name}`}
+                    >
                       <Heart size={17} />
                     </button>
                   </div>
 
                   <div className="food-details">
                     <h3>{food.name}</h3>
+
                     <p className="food-vendor">
-                      <MapPin size={13} /> {food.vendor}
+                      <MapPin size={13} />
+                      {food.vendor}
                     </p>
 
                     <div className="food-meta">
                       <div className="protein-badge">
-                        <Leaf size={13} /> {food.protein}g protein
+                        <Leaf size={13} />
+                        {food.protein.toFixed(1)}g protein
                       </div>
-                      <span className="food-price">{formatPrice(food.price)}</span>
+
+                      <span className="food-price">
+                        {formatPrice(food.price)}
+                      </span>
                     </div>
+
+                    <p className="stock-information">
+                      {food.stock > 0
+                        ? `${food.stock} available`
+                        : "Out of stock"}
+                    </p>
 
                     <button className="food-action">
                       View meal <ArrowRight size={15} />
                     </button>
                   </div>
                 </article>
-              ))}
-            </div>
-          </section>
+              ))
+            )}
+          </div>
+        </section>
 
-          <section className="bottom-section" id="nutrition">
-            <div className="nutrition-banner">
-              <div className="nutrition-icon">
-                <Utensils size={23} />
-              </div>
-              <div>
-                <h3>Every protein source counts</h3>
-                <p>
-                  Beans, soy, groundnuts, mushrooms and more.
-                  Explore affordable alternatives.
-                </p>
-              </div>
-              <ArrowRight className="nutrition-arrow" size={20} />
+        {/* NUTRITION */}
+        <section className="bottom-section" id="nutrition">
+          <div className="nutrition-banner">
+            <div className="nutrition-icon">
+              <Utensils size={23} />
             </div>
 
-            <div className="quick-card">
-              <div className="quick-card-icon">
-                <Clock size={20} />
-              </div>
-              <div>
-                <h3>Ready when you are</h3>
-                <p>Campus pickup · No delivery fees</p>
-              </div>
-            </div>
-          </section>
+            <div>
+              <h3>Every protein source counts</h3>
 
-          <footer className="footer">
-            <span>© 2026 CampusProtein</span>
-            <span>Eat better. Grow stronger. 🌱</span>
-          </footer>
-        </div>
+              <p>
+                Beans, soy, groundnuts, mushrooms and more.
+                Explore affordable alternative protein sources
+                available around your campus.
+              </p>
+            </div>
+
+            <a href="#marketplace">
+              Explore foods <ArrowRight size={16} />
+            </a>
+          </div>
+        </section>
+
+        {/* GOALS */}
+        <section className="goals-section" id="goals">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">YOUR NEXT STEP</p>
+              <h2>Build your nutrition goals</h2>
+            </div>
+          </div>
+
+          <div className="goal-card">
+            <Target size={22} />
+
+            <div>
+              <h3>Set your protein goal</h3>
+              <p>
+                Personalized nutrition recommendations are coming next.
+                Start by exploring the foods available on campus.
+              </p>
+            </div>
+
+            <a href="#marketplace">
+              Get started <ArrowRight size={15} />
+            </a>
+          </div>
+        </section>
+
+        <footer className="app-footer">
+          <p>CampusProtein · Hack the Fork</p>
+          <p>Demo platform using synthetic data</p>
+        </footer>
       </main>
     </div>
   );
