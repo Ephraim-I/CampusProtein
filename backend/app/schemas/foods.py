@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class FoodInfo(BaseModel):
@@ -34,5 +34,28 @@ class FoodListingResponse(BaseModel):
     price_ngn: int
     quantity_available: int
     serving_size_g: float
+    is_available: bool
+    is_active: bool
     food: FoodInfo
     vendor: VendorInfo
+
+class FoodListingCreate(BaseModel):
+    food_id: int = Field(gt=0)
+    title: str = Field(min_length=1, max_length=100)
+    description: str = Field(default="", max_length=2000)
+    price_ngn: int = Field(ge=0)
+    quantity_available: int = Field(ge=0)
+    serving_size_g: float = Field(gt=0, le=5000)
+
+
+class FoodListingUpdate(BaseModel):
+    food_id: int = Field(gt=0)
+    title: str = Field(min_length=1, max_length=100)
+    description: str = Field(default="", max_length=2000)
+    price_ngn: int = Field(ge=0)
+    quantity_available: int = Field(ge=0)
+    serving_size_g: float = Field(gt=0, le=5000)
+
+
+class FoodListingAvailabilityUpdate(BaseModel):
+    is_available: bool

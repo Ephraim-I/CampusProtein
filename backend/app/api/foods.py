@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.core.database import get_db
 from app.models import FoodListing, FoodCatalogue
 from app.schemas import FoodListingResponse
+from app.schemas import FoodInfo
 
 router = APIRouter(prefix="/foods", tags=["Marketplace"])
 
@@ -63,3 +64,16 @@ def get_food_listings(
     query = query.order_by(FoodListing.price_ngn.asc())
 
     return db.scalars(query).unique().all()
+
+@router.get("/catalogue", response_model=list[FoodInfo])
+def get_food_catalogue(
+    db: Session = Depends(get_db),
+):
+    query = (
+        select(FoodCatalogue)
+        .where(FoodCatalogue.is_active.is_(True))
+        .order_by(FoodCatalogue.name.asc())
+    )
+
+    return db.scalars(query).all()
+    
