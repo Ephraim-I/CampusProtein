@@ -28,9 +28,9 @@ import {
   logMeal,
   getFoodCatalogue,
 } from "../services/api";
-import ProteinFinder from "./ProteinFinder";
+import ProteinFinder from "./EnhancedProteinFinder";
 import ConsumerOnboarding from "./ConsumerOnboarding";
-import AIAssistant from "./AIAssistant";
+import AIAssistant from "./DataGroundedAIAssistant";
 import "../App.css";
 
 type Food = {
