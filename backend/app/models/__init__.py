@@ -3,6 +3,12 @@ from app.models.entities import (
     VendorProfile,
     FoodCatalogue,
     FoodListing,
+    ConsumerProfile,
+    Order,
+    OrderItem,
+    MealLog,
+    GamificationProfile,
+    Cart,
 )
 
 __all__ = [
@@ -10,4 +16,10 @@ __all__ = [
     "VendorProfile",
     "FoodCatalogue",
     "FoodListing",
+    "ConsumerProfile",
+    "Order",
+    "OrderItem",
+    "MealLog",
+    "GamificationProfile",
+    "Cart",
 ]

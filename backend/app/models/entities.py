@@ -104,3 +104,101 @@ class FoodListing(Base):
 
     vendor: Mapped["VendorProfile"] = relationship()
     food: Mapped["FoodCatalogue"] = relationship()
+
+
+class ConsumerProfile(Base):
+    __tablename__ = "consumer_profiles"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
+    
+    protein_goal_g: Mapped[int] = mapped_column(Integer, default=55)
+    budget_ngn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    dietary_restrictions: Mapped[str] = mapped_column(Text, default="")  # comma-separated
+    preferred_proteins: Mapped[str] = mapped_column(Text, default="")  # comma-separated categories
+    
+    onboarding_completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    order_code: Mapped[str] = mapped_column(String(10), unique=True, index=True)
+    
+    consumer_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    vendor_id: Mapped[int] = mapped_column(ForeignKey("vendor_profiles.id"))
+    
+    status: Mapped[str] = mapped_column(String(30), default="placed")  # placed, accepted, preparing, ready, completed, rejected
+    total_ngn: Mapped[int] = mapped_column(Integer)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+    
+    consumer: Mapped["User"] = relationship(foreign_keys=[consumer_id])
+    vendor: Mapped["VendorProfile"] = relationship(foreign_keys=[vendor_id])
+
+
+class OrderItem(Base):
+    __tablename__ = "order_items"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    order_id: Mapped[int] = mapped_column(ForeignKey("orders.id"))
+    listing_id: Mapped[int] = mapped_column(ForeignKey("food_listings.id"))
+    
+    quantity: Mapped[int] = mapped_column(Integer)
+    price_ngn: Mapped[int] = mapped_column(Integer)  # Price at time of order
+    
+    order: Mapped["Order"] = relationship()
+    listing: Mapped["FoodListing"] = relationship()
+
+
+class MealLog(Base):
+    __tablename__ = "meal_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    consumer_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    food_id: Mapped[int] = mapped_column(ForeignKey("food_catalogue.id"))
+    
+    servings: Mapped[float] = mapped_column(default=1.0)
+    protein_g: Mapped[float] = mapped_column()
+    calories: Mapped[float] = mapped_column()
+    
+    logged_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    
+    consumer: Mapped["User"] = relationship()
+    food: Mapped["FoodCatalogue"] = relationship()
+
+
+class GamificationProfile(Base):
+    __tablename__ = "gamification_profiles"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
+    
+    points: Mapped[int] = mapped_column(Integer, default=0)
+    current_streak: Mapped[int] = mapped_column(Integer, default=0)
+    longest_streak: Mapped[int] = mapped_column(Integer, default=0)
+    last_log_date: Mapped[str | None] = mapped_column(String(10), nullable=True)  # YYYY-MM-DD
+    
+    badges: Mapped[str] = mapped_column(Text, default="")  # comma-separated badge IDs
+    challenge_joined: Mapped[bool] = mapped_column(Boolean, default=False)
+    challenge_progress: Mapped[int] = mapped_column(Integer, default=0)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+
+class Cart(Base):
+    __tablename__ = "carts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    consumer_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    listing_id: Mapped[int] = mapped_column(ForeignKey("food_listings.id"))
+    
+    quantity: Mapped[int] = mapped_column(Integer, default=1)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    
+    consumer: Mapped["User"] = relationship()
+    listing: Mapped["FoodListing"] = relationship()
