@@ -18,6 +18,7 @@ import "./App.css";
 import AuthScreen from "./components/AuthScreen";
 import AdminConsole from "./components/AdminConsole";
 import VendorDashboard from "./components/VendorDashboard";
+import ProteinFinder from "./components/ProteinFinder";
 
 import { useAuth } from "./context/AuthContext";
 import { getToken } from "./services/auth";
@@ -311,6 +312,9 @@ function MarketplaceDashboard() {
             </a>
           </div>
         </section>
+
+        {/* PROTEIN INTELLIGENCE */}
+        <ProteinFinder />
 
         {/* MARKETPLACE */}
         <section className="market-section" id="marketplace">
