@@ -1,0 +1,269 @@
+.onboarding-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 2000;
+}
+
+.onboarding-card {
+  background: white;
+  border-radius: 24px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.onboarding-header {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  padding: 40px 32px;
+  text-align: center;
+  border-radius: 24px 24px 0 0;
+}
+
+.onboarding-header h1 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  color: #166534;
+}
+
+.onboarding-header > p {
+  margin: 0 0 24px 0;
+  color: #15803d;
+  font-size: 16px;
+}
+
+.onboarding-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.progress-bar {
+  width: 200px;
+  height: 6px;
+  background: rgba(34, 197, 94, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #22c55e;
+  transition: width 0.3s;
+}
+
+.onboarding-progress span {
+  font-size: 13px;
+  color: #15803d;
+  font-weight: 500;
+}
+
+.onboarding-step {
+  padding: 40px 32px;
+}
+
+.step-icon {
+  display: flex;
+  justify-content: center;
+  color: #22c55e;
+  margin-bottom: 24px;
+}
+
+.onboarding-step h2 {
+  text-align: center;
+  margin: 0 0 8px 0;
+  font-size: 24px;
+}
+
+.onboarding-step > p {
+  text-align: center;
+  color: #666;
+  margin: 0 0 32px 0;
+}
+
+.goal-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.goal-option {
+  background: white;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.goal-option:hover {
+  border-color: #22c55e;
+}
+
+.goal-option.selected {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.goal-option strong {
+  font-size: 16px;
+  color: #111;
+}
+
+.goal-option span {
+  font-size: 14px;
+  color: #888;
+}
+
+.budget-selector {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.budget-selector input[type="range"] {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.budget-display {
+  font-size: 48px;
+  font-weight: 700;
+  color: #22c55e;
+  margin-bottom: 8px;
+}
+
+.quick-budgets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.quick-budgets button {
+  padding: 12px;
+  background: white;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.quick-budgets button:hover {
+  border-color: #22c55e;
+}
+
+.quick-budgets button.selected {
+  border-color: #22c55e;
+  background: #f0fdf4;
+  color: #22c55e;
+}
+
+.preference-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.preference-option {
+  background: white;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.preference-option:hover {
+  border-color: #22c55e;
+}
+
+.preference-option.selected {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.pref-emoji {
+  font-size: 32px;
+}
+
+.preference-option svg {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #22c55e;
+}
+
+.onboarding-note {
+  text-align: center;
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 32px;
+}
+
+.onboarding-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.onboarding-back,
+.onboarding-next,
+.onboarding-complete {
+  flex: 1;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.onboarding-back {
+  background: white;
+  border: 2px solid #e5e5e5;
+  color: #666;
+}
+
+.onboarding-back:hover {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.onboarding-next,
+.onboarding-complete {
+  background: #22c55e;
+  border: none;
+  color: white;
+}
+
+.onboarding-next:hover,
+.onboarding-complete:hover {
+  background: #16a34a;
+}
+
+.onboarding-next:disabled,
+.onboarding-complete:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}

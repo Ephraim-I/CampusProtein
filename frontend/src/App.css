@@ -1291,3 +1291,20 @@ a {
   background: #dcfce7;
   color: #22c55e;
 }
+
+.log-meal-button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  background: #22c55e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.log-meal-button:hover {
+  background: #16a34a;
+}
