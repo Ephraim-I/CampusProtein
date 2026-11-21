@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Wallet, TrendingUp, Leaf } from "lucide-react";
+import { Wallet, TrendingUp, Leaf } from "lucide-react";
 import "./ProteinFinder.css";
 
 type Listing = {
